@@ -75,7 +75,6 @@ public class mouseInteraction : MonoBehaviour
                 {
                     if (previousPoints.Count > 0)
                     {
-                        Debug.Log("hi");
                         GameObject obj2Destroy = previousPoints.Pop();
                         Destroy(obj2Destroy);
                     }
@@ -97,6 +96,7 @@ public class mouseInteraction : MonoBehaviour
             firstPointDrawn = false;
             previousPoints.Clear();
             Debug.Log($"finishes --> firstPos: {firstPoint} second point: {secondPoint}");
+            //TODO: call spawn method for current selected unit
 
             firstPoint = Vector3.zero;
             secondPoint = Vector3.zero;
