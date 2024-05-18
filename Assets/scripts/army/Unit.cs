@@ -4,34 +4,45 @@ using UnityEngine;
 public class Unit : MonoBehaviour
 {
     public GameObject soldierPrefab;
-    float totalUnitSize = 10;
-    float currentSoldiers = 10;
+    public int unitId { get; private set; }
+    public float unitXSpacing;
+    public float unitZSpacing;
+    public float totalUnitSize = 4;
+    public float currentSoldiers = 4;
     string status;
     int rows;
     int columns;
     float unitSize;
     GameObject[,] soldiers;
 
-    private void Start()
+    public Unit(GameObject soldierPrefab, float totalUnitSize, float currentSoldiers, string status, int rows, int columns, float unitSize, GameObject[,] soldiers)
+    {
+        this.soldierPrefab = soldierPrefab;
+        this.totalUnitSize = totalUnitSize;
+        this.currentSoldiers = currentSoldiers;
+        this.status = status;
+        this.rows = rows;
+        this.columns = columns;
+        this.unitSize = unitSize;
+        this.soldiers = soldiers;
+    }
+
+    private void OnEnable()
     {
         initFormation();
+    }
+
+    public void setId(int pId)
+    {
+        unitId = pId;
     }
 
     void initFormation()
     {
         columns = Mathf.CeilToInt(totalUnitSize / 2);
         rows = Mathf.CeilToInt(totalUnitSize / columns);
-
         soldiers = new GameObject[rows, columns];
-
-        for (int i = 0; i < soldiers.Length; i++)
-        {
-            for (int j = 0; j < soldiers.Length; j++)
-            {
-                soldiers[i, j] = soldierPrefab;
-            }
-
-        }
+        Debug.Log($"initFormation called: {soldiers.GetLength(0)}, {soldiers.GetLength(1)}");
     }
 
     void updateFormation(int pNewColumns)
@@ -65,6 +76,28 @@ public class Unit : MonoBehaviour
         }
 
         return soldierQeue;
+
+    }
+
+    public void spawnUnitOnPoint(Vector3 pInitSpawnPoint)
+    {
+        Debug.Log($"spawnUnitOnPoint called. Unit id: {unitId}");
+        Vector3 currentSpawnPoint = pInitSpawnPoint;
+
+        Debug.Log($"soldiers: {soldiers.GetLength(0)}");
+
+        for (int i = 0; i < soldiers.GetLength(0); i++)
+        {
+            Debug.Log("first loop");
+            for (int j = 0; j < soldiers.GetLength(1); j++)
+            {
+                Debug.Log("second loop");
+                GameObject soldier = Instantiate(soldierPrefab, currentSpawnPoint, Quaternion.identity, transform);
+                soldiers[i, j] = soldier;
+                currentSpawnPoint.x = pInitSpawnPoint.x + j * unitXSpacing;
+            }
+            currentSpawnPoint.z = pInitSpawnPoint.z + i * unitZSpacing;
+        }
 
     }
 

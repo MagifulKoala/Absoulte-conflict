@@ -5,6 +5,7 @@ public class mouseInteraction : MonoBehaviour
 {
     [Header("prefabs")]
     public GameObject spawnTemplate;
+    public Army army;
     Camera mainCamera;
     bool firstPointDrawn;
 
@@ -16,21 +17,22 @@ public class mouseInteraction : MonoBehaviour
     private void Update()
     {
         drawLine();
+        spawnUnitOnField();
     }
 
     void checkRightClick()
     {
-        if(Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(1))
         {
             Debug.Log("Right click down");
         }
-        if(Input.GetMouseButtonUp(1))  
+        if (Input.GetMouseButtonUp(1))
         {
             Debug.Log("Right click up");
         }
     }
 
-    //mouse raycast to 'real world'
+    //mouse raycast to 'real world' position
     Vector3? MouseCast()
     {
         Vector3 mouseScreenPosition = Input.mousePosition;
@@ -101,6 +103,34 @@ public class mouseInteraction : MonoBehaviour
             firstPoint = Vector3.zero;
             secondPoint = Vector3.zero;
         }
+    }
+
+
+    public void spawnUnitOnField()
+    {
+        if (Input.GetMouseButtonDown(1))
+        {
+            Vector3? currentPoint = MouseCast();
+            int unitID = UIControl.uiInstance.currentSelectedUnitId;
+            GameObject unitObject = army.GetUnitById(unitID);
+
+            if (unitObject != null)
+            {
+                Debug.Log(unitObject);
+                if(unitObject.TryGetComponent<Unit>(out Unit unit))
+                {
+                    Debug.Log($"point to spawn: {currentPoint.Value}");
+                    unit.spawnUnitOnPoint(currentPoint.Value);
+                }
+             
+            }
+            else
+            {
+                Debug.Log($"unitID: {unitID} returned null from army");
+            }
+
+        }
+
     }
 
 
