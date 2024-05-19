@@ -29,6 +29,7 @@ public class Unit : MonoBehaviour
 
     private void OnEnable()
     {
+        currentSoldiers = totalUnitSize;
         initFormation();
     }
 
@@ -39,7 +40,7 @@ public class Unit : MonoBehaviour
 
     void initFormation()
     {
-        columns = Mathf.CeilToInt(totalUnitSize / 2);
+        columns = Mathf.CeilToInt(Mathf.Sqrt(totalUnitSize));
         rows = Mathf.CeilToInt(totalUnitSize / columns);
         soldiers = new GameObject[rows, columns];
         Debug.Log($"initFormation called: {soldiers.GetLength(0)}, {soldiers.GetLength(1)}");
@@ -83,20 +84,21 @@ public class Unit : MonoBehaviour
     {
         Debug.Log($"spawnUnitOnPoint called. Unit id: {unitId}");
         Vector3 currentSpawnPoint = pInitSpawnPoint;
-
-        Debug.Log($"soldiers: {soldiers.GetLength(0)}");
+        int spawnCount = 0;
+        //Debug.Log($"initSpawnPoint: {pInitSpawnPoint}");
 
         for (int i = 0; i < soldiers.GetLength(0); i++)
         {
-            Debug.Log("first loop");
+            currentSpawnPoint.z = pInitSpawnPoint.z - i * unitZSpacing;
             for (int j = 0; j < soldiers.GetLength(1); j++)
             {
-                Debug.Log("second loop");
-                GameObject soldier = Instantiate(soldierPrefab, currentSpawnPoint, Quaternion.identity, transform);
-                soldiers[i, j] = soldier;
                 currentSpawnPoint.x = pInitSpawnPoint.x + j * unitXSpacing;
+                if(spawnCount >= currentSoldiers){break;}
+                GameObject soldier = Instantiate(soldierPrefab, currentSpawnPoint, Quaternion.identity, transform);
+                spawnCount++;
+                soldiers[i, j] = soldier;
+                Debug.Log($"currentSpawn: {currentSpawnPoint} ij values: {i},{j}");
             }
-            currentSpawnPoint.z = pInitSpawnPoint.z + i * unitZSpacing;
         }
 
     }

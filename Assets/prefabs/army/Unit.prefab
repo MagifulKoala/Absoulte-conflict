@@ -44,8 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf4b325bfc6479545a072fc9e46fdc9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soldierPrefab: {fileID: 8382500641830714872, guid: 31d1adac65dea064d98885d06e8deaa7, type: 3}
-  unitXSpacing: 1
-  unitZSpacing: 1
-  totalUnitSize: 4
+  soldierPrefab: {fileID: 1332798569909698863, guid: d6f5277071f11994f982830c993f11ea, type: 3}
+  unitXSpacing: 1.25
+  unitZSpacing: 1.25
+  totalUnitSize: 25
   currentSoldiers: 0

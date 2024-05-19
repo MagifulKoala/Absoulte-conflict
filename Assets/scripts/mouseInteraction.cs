@@ -116,13 +116,16 @@ public class mouseInteraction : MonoBehaviour
 
             if (unitObject != null)
             {
-                Debug.Log(unitObject);
-                if(unitObject.TryGetComponent<Unit>(out Unit unit))
+                //Debug.Log(unitObject);
+                if (unitObject.TryGetComponent<Unit>(out Unit unit))
                 {
-                    Debug.Log($"point to spawn: {currentPoint.Value}");
-                    unit.spawnUnitOnPoint(currentPoint.Value);
+                    if (currentPoint != null)
+                    {
+                        Debug.Log($"point to spawn: {currentPoint.Value}");
+                        unit.spawnUnitOnPoint(currentPoint.Value);
+                    }
                 }
-             
+
             }
             else
             {
