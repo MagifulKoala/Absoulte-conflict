@@ -113,19 +113,23 @@ public class mouseInteraction : MonoBehaviour
         //TODO: set var for minimum number of columns
         if (possibleNewColumns >= 2 && currentUnit.isDeployed)
         {
-            if(possibleNewColumns > maxColumns)
+            if (possibleNewColumns > maxColumns)
             {
                 possibleNewColumns = maxColumns;
             }
             currentUnit.updateFormation(possibleNewColumns);
+            spawnUnitOnFieldControl(pInitPoint, pEndPoint, false);
         }
-        spawnUnitOnFieldControl(pInitPoint, pEndPoint);
+        else
+        {
+            spawnUnitOnFieldControl(pInitPoint, pEndPoint, true);
+        }
 
     }
 
 
     //controls how the currently selected unit is spawn on the field
-    public void spawnUnitOnFieldControl(Vector3 spawnPoint, Vector3 endPoint)
+    public void spawnUnitOnFieldControl(Vector3 spawnPoint, Vector3 endPoint, bool keepPreviousFormation)
     {
         Unit currentUnit = GetCurrenSelectedUnit().GetComponent<Unit>();
         if (currentUnit != null)
@@ -134,11 +138,7 @@ public class mouseInteraction : MonoBehaviour
             {
                 currentUnit.deleteCurrentSoldiers();
             }
-            SpawnCurrentUnit(spawnPoint, endPoint);
-        }
-        if (Input.GetMouseButtonDown(1))
-        {
-
+            SpawnCurrentUnit(spawnPoint, endPoint, keepPreviousFormation);
         }
 
     }
@@ -149,7 +149,7 @@ public class mouseInteraction : MonoBehaviour
         return army.GetUnitById(unitID);
     }
 
-    private void SpawnCurrentUnit(Vector3 spawnPoint, Vector3 endPoint)
+    private void SpawnCurrentUnit(Vector3 spawnPoint, Vector3 endPoint, bool keepPreviousFormation)
     {
         Debug.Log("spawn current units called");
         Vector3? currentPoint = spawnPoint;
@@ -163,7 +163,7 @@ public class mouseInteraction : MonoBehaviour
                 if (currentPoint != null)
                 {
                     Debug.Log($"point to spawn: {currentPoint.Value}");
-                    unit.spawnUnitOnPoint(spawnPoint, endPoint);
+                    unit.spawnUnitOnPoint(spawnPoint, endPoint, keepPreviousFormation);
                 }
             }
 

@@ -13,10 +13,12 @@ public class Unit : MonoBehaviour
     public int columns{get; private set;}
     public bool isDeployed{get; private set;}
     GameObject[,] soldiers;
+    Vector3 previousDirection;
 
     private void OnEnable()
     {
         currentSoldiers = totalUnitSize;
+        previousDirection = Vector3.right;
         initFormation();
     }
 
@@ -73,18 +75,29 @@ public class Unit : MonoBehaviour
         return soldierQeue;
     }
 
-    public void spawnUnitOnPoint(Vector3 pInitSpawnPoint, Vector3 pEndPoint)
+    public void spawnUnitOnPoint(Vector3 pInitSpawnPoint, Vector3 pEndPoint, bool keepPreviousFormation)
     {
         Debug.Log($"spawnUnitOnPoint called. Unit id: {unitId}");
+        Debug.Log($"formation: rows,cols: {soldiers.GetLength(0)},{soldiers.GetLength(1)}");
+        Debug.Log($"spawnPoints: {pInitSpawnPoint},{pEndPoint}");
         Vector3 initSpawn = pInitSpawnPoint;
         Vector3 currentSpawnPoint = pInitSpawnPoint;
         int spawnCount = 0;
         //Debug.Log($"initSpawnPoint: {pInitSpawnPoint}");
-        Vector3 direction = pEndPoint - currentSpawnPoint;
+        Vector3 direction = pEndPoint - pInitSpawnPoint;
         direction = Vector3.Normalize(direction);
+        if(keepPreviousFormation)
+        {
+            direction = previousDirection;
+        }
+        previousDirection = direction;
+
 
         Vector3 depthDirection = Vector3.Cross(direction, Vector3.up);
         depthDirection = -Vector3.Normalize(depthDirection);
+
+        //find rotation
+        Quaternion rotationDirection = Quaternion.LookRotation(-depthDirection);
 
         for (int i = 0; i < soldiers.GetLength(0); i++)
         {
@@ -96,7 +109,7 @@ public class Unit : MonoBehaviour
                 currentSpawnPoint = initSpawn + direction * j * unitXSpacing;
                 if(spawnCount >= currentSoldiers){break;}
                 //GameObject soldier = Instantiate(soldierPrefab, currentSpawnPoint, Quaternion.identity, transform);
-                GameObject soldier = Instantiate(soldierPrefab, currentSpawnPoint, Quaternion.identity, transform);
+                GameObject soldier = Instantiate(soldierPrefab, currentSpawnPoint, rotationDirection , transform);
                 spawnCount++;
                 soldiers[i, j] = soldier;
                 //Debug.Log($"currentSpawn: {currentSpawnPoint} ij values: {i},{j}");
