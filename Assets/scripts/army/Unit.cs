@@ -7,25 +7,12 @@ public class Unit : MonoBehaviour
     public int unitId { get; private set; }
     public float unitXSpacing;
     public float unitZSpacing;
-    public float totalUnitSize = 4;
-    public float currentSoldiers = 4;
-    string status;
+    public int totalUnitSize = 4;
+    public int currentSoldiers = 4;
     int rows;
-    int columns;
-    float unitSize;
+    public int columns{get; private set;}
+    public bool isDeployed{get; private set;}
     GameObject[,] soldiers;
-
-    public Unit(GameObject soldierPrefab, float totalUnitSize, float currentSoldiers, string status, int rows, int columns, float unitSize, GameObject[,] soldiers)
-    {
-        this.soldierPrefab = soldierPrefab;
-        this.totalUnitSize = totalUnitSize;
-        this.currentSoldiers = currentSoldiers;
-        this.status = status;
-        this.rows = rows;
-        this.columns = columns;
-        this.unitSize = unitSize;
-        this.soldiers = soldiers;
-    }
 
     private void OnEnable()
     {
@@ -46,18 +33,25 @@ public class Unit : MonoBehaviour
         Debug.Log($"initFormation called: {soldiers.GetLength(0)}, {soldiers.GetLength(1)}");
     }
 
-    void updateFormation(int pNewColumns)
+    public void updateFormation(int pNewColumns)
     {
-        rows = Mathf.CeilToInt(totalUnitSize / columns);
-
+        Debug.Log("Unit: updating formation");
+        Debug.Log($"currSoldier: {currentSoldiers}, cols: {pNewColumns}, curr/cols: {((float)currentSoldiers/(float)pNewColumns)}");
+        rows = Mathf.CeilToInt(((float)currentSoldiers / (float)pNewColumns));
+        int spawnCount = 0;
         GameObject[,] tempFormation = new GameObject[rows, pNewColumns];
         Queue<GameObject> soldierQueue = addSoldiersToQueue();
+
+
+        Debug.Log($"tempFormation size: {rows*pNewColumns}, rc: {rows},{pNewColumns}, armySize: {currentSoldiers}");
 
         for (int i = 0; i < tempFormation.GetLength(0); i++)
         {
             for (int j = 0; j < tempFormation.GetLength(1); j++)
             {
+                if(spawnCount >= currentSoldiers){break;}
                 tempFormation[i, j] = soldierQueue.Dequeue();
+                spawnCount++;
             }
         }
 
@@ -77,30 +71,52 @@ public class Unit : MonoBehaviour
         }
 
         return soldierQeue;
-
     }
 
-    public void spawnUnitOnPoint(Vector3 pInitSpawnPoint)
+    public void spawnUnitOnPoint(Vector3 pInitSpawnPoint, Vector3 pEndPoint)
     {
         Debug.Log($"spawnUnitOnPoint called. Unit id: {unitId}");
+        Vector3 initSpawn = pInitSpawnPoint;
         Vector3 currentSpawnPoint = pInitSpawnPoint;
         int spawnCount = 0;
         //Debug.Log($"initSpawnPoint: {pInitSpawnPoint}");
+        Vector3 direction = pEndPoint - currentSpawnPoint;
+        direction = Vector3.Normalize(direction);
+
+        Vector3 depthDirection = Vector3.Cross(direction, Vector3.up);
+        depthDirection = -Vector3.Normalize(depthDirection);
 
         for (int i = 0; i < soldiers.GetLength(0); i++)
         {
-            currentSpawnPoint.z = pInitSpawnPoint.z - i * unitZSpacing;
+            //currentSpawnPoint.z = pInitSpawnPoint.z - i * unitZSpacing;
+            initSpawn = pInitSpawnPoint + depthDirection * i * unitZSpacing;
             for (int j = 0; j < soldiers.GetLength(1); j++)
             {
-                currentSpawnPoint.x = pInitSpawnPoint.x + j * unitXSpacing;
+                //currentSpawnPoint.x = pInitSpawnPoint.x + j * unitXSpacing;
+                currentSpawnPoint = initSpawn + direction * j * unitXSpacing;
                 if(spawnCount >= currentSoldiers){break;}
+                //GameObject soldier = Instantiate(soldierPrefab, currentSpawnPoint, Quaternion.identity, transform);
                 GameObject soldier = Instantiate(soldierPrefab, currentSpawnPoint, Quaternion.identity, transform);
                 spawnCount++;
                 soldiers[i, j] = soldier;
-                Debug.Log($"currentSpawn: {currentSpawnPoint} ij values: {i},{j}");
+                //Debug.Log($"currentSpawn: {currentSpawnPoint} ij values: {i},{j}");
             }
         }
 
+        isDeployed = true;
+
+    }
+
+    public void deleteCurrentSoldiers()
+    {
+        for (int i = 0; i < soldiers.GetLength(0); i++)
+        {
+            for (int j = 0; j < soldiers.GetLength(1); j++)
+            {
+                Destroy(soldiers[i,j]);
+            }
+            
+        }
     }
 
 }

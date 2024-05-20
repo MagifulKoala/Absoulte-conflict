@@ -47,5 +47,5 @@ MonoBehaviour:
   soldierPrefab: {fileID: 1332798569909698863, guid: d6f5277071f11994f982830c993f11ea, type: 3}
   unitXSpacing: 1.25
   unitZSpacing: 1.25
-  totalUnitSize: 25
+  totalUnitSize: 9
   currentSoldiers: 0

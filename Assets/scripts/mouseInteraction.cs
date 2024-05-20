@@ -17,19 +17,7 @@ public class mouseInteraction : MonoBehaviour
     private void Update()
     {
         drawLine();
-        spawnUnitOnField();
-    }
-
-    void checkRightClick()
-    {
-        if (Input.GetMouseButtonDown(1))
-        {
-            Debug.Log("Right click down");
-        }
-        if (Input.GetMouseButtonUp(1))
-        {
-            Debug.Log("Right click up");
-        }
+        //spawnUnitOnFieldControl();
     }
 
     //mouse raycast to 'real world' position
@@ -98,45 +86,91 @@ public class mouseInteraction : MonoBehaviour
             firstPointDrawn = false;
             previousPoints.Clear();
             Debug.Log($"finishes --> firstPos: {firstPoint} second point: {secondPoint}");
-            //TODO: call spawn method for current selected unit
 
+
+            //spawn current unit on line 
+            spawnCurrentUnitOnLine(firstPoint, secondPoint);
+
+
+            //reset points
             firstPoint = Vector3.zero;
             secondPoint = Vector3.zero;
         }
     }
 
-
-    public void spawnUnitOnField()
+    void spawnCurrentUnitOnLine(Vector3 pInitPoint, Vector3 pEndPoint)
     {
+        float dist = Vector3.Distance(pInitPoint, pEndPoint);
+
+        Unit currentUnit = GetCurrenSelectedUnit().GetComponent<Unit>();
+        float currentUnitSpacing = currentUnit.unitXSpacing;
+        int maxColumns = currentUnit.currentSoldiers;
+
+        int possibleNewColumns = Mathf.CeilToInt(dist / currentUnitSpacing);
+
+        Debug.Log($"currentUnitSpacing: {currentUnitSpacing} , possibleCols: {possibleNewColumns}, dist: {dist}");
+
+        //TODO: set var for minimum number of columns
+        if (possibleNewColumns >= 2 && currentUnit.isDeployed)
+        {
+            if(possibleNewColumns > maxColumns)
+            {
+                possibleNewColumns = maxColumns;
+            }
+            currentUnit.updateFormation(possibleNewColumns);
+        }
+        spawnUnitOnFieldControl(pInitPoint, pEndPoint);
+
+    }
+
+
+    //controls how the currently selected unit is spawn on the field
+    public void spawnUnitOnFieldControl(Vector3 spawnPoint, Vector3 endPoint)
+    {
+        Unit currentUnit = GetCurrenSelectedUnit().GetComponent<Unit>();
+        if (currentUnit != null)
+        {
+            if (currentUnit.isDeployed)
+            {
+                currentUnit.deleteCurrentSoldiers();
+            }
+            SpawnCurrentUnit(spawnPoint, endPoint);
+        }
         if (Input.GetMouseButtonDown(1))
         {
-            Vector3? currentPoint = MouseCast();
-            int unitID = UIControl.uiInstance.currentSelectedUnitId;
-            GameObject unitObject = army.GetUnitById(unitID);
-
-            if (unitObject != null)
-            {
-                //Debug.Log(unitObject);
-                if (unitObject.TryGetComponent<Unit>(out Unit unit))
-                {
-                    if (currentPoint != null)
-                    {
-                        Debug.Log($"point to spawn: {currentPoint.Value}");
-                        unit.spawnUnitOnPoint(currentPoint.Value);
-                    }
-                }
-
-            }
-            else
-            {
-                Debug.Log($"unitID: {unitID} returned null from army");
-            }
 
         }
 
     }
 
+    private GameObject GetCurrenSelectedUnit()
+    {
+        int unitID = UIControl.uiInstance.currentSelectedUnitId;
+        return army.GetUnitById(unitID);
+    }
 
+    private void SpawnCurrentUnit(Vector3 spawnPoint, Vector3 endPoint)
+    {
+        Debug.Log("spawn current units called");
+        Vector3? currentPoint = spawnPoint;
+        GameObject unitObject = GetCurrenSelectedUnit();
 
+        if (unitObject != null)
+        {
+            //Debug.Log(unitObject);
+            if (unitObject.TryGetComponent<Unit>(out Unit unit))
+            {
+                if (currentPoint != null)
+                {
+                    Debug.Log($"point to spawn: {currentPoint.Value}");
+                    unit.spawnUnitOnPoint(spawnPoint, endPoint);
+                }
+            }
 
+        }
+        else
+        {
+            Debug.Log($"unitID: {unitObject} returned null from army");
+        }
+    }
 }
