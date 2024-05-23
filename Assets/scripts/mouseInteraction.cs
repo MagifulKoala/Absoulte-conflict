@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Net;
 using UnityEngine;
 
 public class mouseInteraction : MonoBehaviour
@@ -6,18 +7,71 @@ public class mouseInteraction : MonoBehaviour
     [Header("prefabs")]
     public GameObject spawnTemplate;
     public Army army;
+    public GameObject directionArrowPrefab;
+    public GameObject startPointPrefab;
+    public GameObject soldierPosPrefab;
+    GameObject currentDirectionArrowPrefab;
+    GameObject currentStartPointPrefab;
+    List<GameObject> currentSoldierPositions;
     Camera mainCamera;
     bool firstPointDrawn;
+    LineRenderer lineRenderer;
 
     private void Start()
     {
         mainCamera = GetComponent<Camera>();
+        lineRenderer = GetComponent<LineRenderer>();
+        lineRenderer.enabled = false;
+        lineRenderer.positionCount = 2;
     }
 
     private void Update()
     {
-        drawLine();
+        formLine();
         //spawnUnitOnFieldControl();
+    }
+
+    void DrawLine(Vector3 pInitPoint, Vector3 pEndPoint)
+    {
+        DestroyPreviousPoints();
+
+        lineRenderer.SetPosition(0, pInitPoint);
+        lineRenderer.SetPosition(1, pEndPoint);
+        lineRenderer.enabled = true;
+
+        drawPoints(pInitPoint, pEndPoint);
+    }
+
+    private void DestroyPreviousPoints()
+    {
+        if (currentDirectionArrowPrefab != null)
+        {
+            Destroy(currentDirectionArrowPrefab);
+            Destroy(currentStartPointPrefab);
+        }
+    }
+
+    private void drawPoints(Vector3 pInitPoint, Vector3 pEndPoint)
+    {
+        //draw start point
+        currentStartPointPrefab = Instantiate(startPointPrefab, pInitPoint, Quaternion.identity);
+        currentStartPointPrefab.transform.Rotate(new Vector3(90, 0, 0));
+        currentStartPointPrefab.transform.position = currentStartPointPrefab.transform.position + new Vector3(0, 0.20f, 0);
+
+        //draw end arrow
+        Vector3 dir = Vector3.Normalize(pEndPoint - pInitPoint);
+        currentDirectionArrowPrefab = Instantiate(directionArrowPrefab, pEndPoint, Quaternion.LookRotation(dir));
+        currentDirectionArrowPrefab.transform.Rotate(new Vector3(90, 0, 0));
+        currentDirectionArrowPrefab.transform.position = currentDirectionArrowPrefab.transform.position + new Vector3(0, 0.20f, 0);
+    }
+
+    void EraseLine()
+    {
+        if (currentDirectionArrowPrefab != null)
+        {
+            Destroy(currentDirectionArrowPrefab);
+        }
+        lineRenderer.enabled = false;
     }
 
     //mouse raycast to 'real world' position
@@ -43,7 +97,7 @@ public class mouseInteraction : MonoBehaviour
     bool rightClickUp = false;
     Stack<GameObject> previousPoints = new Stack<GameObject>();
 
-    void drawLine()
+    void formLine()
     {
         if (Input.GetMouseButtonDown(1) && !rightClickDown)
         {
@@ -70,6 +124,7 @@ public class mouseInteraction : MonoBehaviour
                     }
                     secondPoint = currentPoint.Value;
                     previousPoints.Push(Instantiate(spawnTemplate, secondPoint, Quaternion.identity));
+                    DrawLine(firstPoint, secondPoint);
                 }
             }
         }
@@ -81,6 +136,7 @@ public class mouseInteraction : MonoBehaviour
 
         if (rightClickUp && firstPointDrawn)
         {
+            EraseLine();
             rightClickUp = false;
             rightClickDown = false;
             firstPointDrawn = false;

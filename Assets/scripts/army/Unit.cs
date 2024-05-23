@@ -10,8 +10,8 @@ public class Unit : MonoBehaviour
     public int totalUnitSize = 4;
     public int currentSoldiers = 4;
     int rows;
-    public int columns{get; private set;}
-    public bool isDeployed{get; private set;}
+    public int columns { get; private set; }
+    public bool isDeployed { get; private set; }
     GameObject[,] soldiers;
     Vector3 previousDirection;
 
@@ -38,20 +38,20 @@ public class Unit : MonoBehaviour
     public void updateFormation(int pNewColumns)
     {
         Debug.Log("Unit: updating formation");
-        Debug.Log($"currSoldier: {currentSoldiers}, cols: {pNewColumns}, curr/cols: {((float)currentSoldiers/(float)pNewColumns)}");
+        Debug.Log($"currSoldier: {currentSoldiers}, cols: {pNewColumns}, curr/cols: {((float)currentSoldiers / (float)pNewColumns)}");
         rows = Mathf.CeilToInt(((float)currentSoldiers / (float)pNewColumns));
         int spawnCount = 0;
         GameObject[,] tempFormation = new GameObject[rows, pNewColumns];
         Queue<GameObject> soldierQueue = addSoldiersToQueue();
 
 
-        Debug.Log($"tempFormation size: {rows*pNewColumns}, rc: {rows},{pNewColumns}, armySize: {currentSoldiers}");
+        Debug.Log($"tempFormation size: {rows * pNewColumns}, rc: {rows},{pNewColumns}, armySize: {currentSoldiers}");
 
         for (int i = 0; i < tempFormation.GetLength(0); i++)
         {
             for (int j = 0; j < tempFormation.GetLength(1); j++)
             {
-                if(spawnCount >= currentSoldiers){break;}
+                if (spawnCount >= currentSoldiers) { break; }
                 tempFormation[i, j] = soldierQueue.Dequeue();
                 spawnCount++;
             }
@@ -86,7 +86,7 @@ public class Unit : MonoBehaviour
         //Debug.Log($"initSpawnPoint: {pInitSpawnPoint}");
         Vector3 direction = pEndPoint - pInitSpawnPoint;
         direction = Vector3.Normalize(direction);
-        if(keepPreviousFormation)
+        if (keepPreviousFormation)
         {
             direction = previousDirection;
         }
@@ -107,9 +107,9 @@ public class Unit : MonoBehaviour
             {
                 //currentSpawnPoint.x = pInitSpawnPoint.x + j * unitXSpacing;
                 currentSpawnPoint = initSpawn + direction * j * unitXSpacing;
-                if(spawnCount >= currentSoldiers){break;}
+                if (spawnCount >= currentSoldiers) { break; }
                 //GameObject soldier = Instantiate(soldierPrefab, currentSpawnPoint, Quaternion.identity, transform);
-                GameObject soldier = Instantiate(soldierPrefab, currentSpawnPoint, rotationDirection , transform);
+                GameObject soldier = Instantiate(soldierPrefab, currentSpawnPoint, rotationDirection, transform);
                 spawnCount++;
                 soldiers[i, j] = soldier;
                 //Debug.Log($"currentSpawn: {currentSpawnPoint} ij values: {i},{j}");
@@ -117,8 +117,48 @@ public class Unit : MonoBehaviour
         }
 
         isDeployed = true;
-
     }
+
+    public Vector3[,] getFormationPoints(Vector3 pInitSpawnPoint, Vector3 pEndPoint,bool keepPreviousFormation)
+    {
+        int rows = Mathf.CeilToInt(((float)currentSoldiers / (float)columns));
+        int spawnCount = 0;
+        Vector3 initSpawn = pInitSpawnPoint;
+        Vector3 currentSpawnPoint = pInitSpawnPoint;
+        Vector3[,] formationMatrix = new Vector3[rows, columns];
+
+        Vector3 direction = pEndPoint - pInitSpawnPoint;
+        direction = Vector3.Normalize(direction);
+        if (keepPreviousFormation)
+        {
+            direction = previousDirection;
+        }
+        previousDirection = direction;
+
+
+        Vector3 depthDirection = Vector3.Cross(direction, Vector3.up);
+        depthDirection = -Vector3.Normalize(depthDirection);
+
+        //find rotation
+        Quaternion rotationDirection = Quaternion.LookRotation(-depthDirection);
+
+        for (int i = 0; i < soldiers.GetLength(0); i++)
+        {
+            initSpawn = pInitSpawnPoint + depthDirection * i * unitZSpacing;
+            for (int j = 0; j < soldiers.GetLength(1); j++)
+            {
+                currentSpawnPoint = initSpawn + direction * j * unitXSpacing;
+                if (spawnCount >= currentSoldiers) { break; }
+                formationMatrix[i,j] = currentSpawnPoint;
+                spawnCount++;
+            }
+        }
+
+        return formationMatrix;
+    }
+
+
+
 
     public void deleteCurrentSoldiers()
     {
@@ -126,9 +166,9 @@ public class Unit : MonoBehaviour
         {
             for (int j = 0; j < soldiers.GetLength(1); j++)
             {
-                Destroy(soldiers[i,j]);
+                Destroy(soldiers[i, j]);
             }
-            
+
         }
     }
 
